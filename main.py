@@ -27,9 +27,9 @@ if __name__ == '__main__':
     camera_position = Vec(0, -0, 0)
     background_color = Color(255, 255, 255)
     rot_mat = [
-              [0.70, 0, -0.70],
+              [1, 0, 0],
               [0, 1, 0],
-              [0.7, 0, 0.7]
+              [0, 0, 1]
     ]
     for x in range(-center_x, center_x):
         for y in range(-center_y, center_y):

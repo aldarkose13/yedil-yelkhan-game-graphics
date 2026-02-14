@@ -82,10 +82,14 @@ class Light:
 
 
 spheres = [
-        Sphere(center=Vec(0, -1, 3), radius=1, color=Color(255, 0, 0), specular = 10, reflective=0.12),
-        Sphere(center=Vec(-2, 0, 4), radius=1, color=Color(0, 255, 0), specular=10, reflective=0.09),
-        Sphere(center=Vec(2, 0, 4), radius=1, color=Color(0, 0, 255), specular=20, reflective=0.02),
-        Sphere(center=Vec(0, -5001, 0), radius=5000, color=Color(255, 255, 0), specular=1, reflective=0.05),
+        Sphere(center=Vec(0, -1, 3), radius=1, color=Color(255, 0, 0), specular = 10, reflective=0.12,
+               transparency=0.8),
+        Sphere(center=Vec(-2, 0, 4), radius=1, color=Color(0, 255, 0), specular=10, reflective=0.09,
+               transparency=0),
+        Sphere(center=Vec(2, 0, 4), radius=1, color=Color(0, 0, 255), specular=20, reflective=0.02,
+               transparency=0),
+        Sphere(center=Vec(0, -5001, 0), radius=5000, color=Color(255, 255, 0), specular=1, reflective=0.05,
+               transparency=0),
 
     ]
 lights = [
@@ -193,10 +197,16 @@ def trace_ray(origin, direction : Vec, min_t, max_t, depth):
     view = multiply(direction, -1)
     lighting = compute_lighting(point, normal, view, closest_sphere.specular, lights)
     local_color = closest_sphere.color.mul(lighting)
-    if closest_sphere.get_reflective()<=0 or depth <=0:
+    if depth <=0:
         return local_color
+    reflective = closest_sphere.get_reflective() or 0
+    transparency = closest_sphere.get_transparency() or 0
     reflected_ray = reflect_ray(view, normal)
     reflected_color = trace_ray(point, reflected_ray, EPSILON, Infinity, depth-1)
-    local_contribution = local_color.mul(1-closest_sphere.get_reflective())
-    reflected_contribution = reflected_color.mul(closest_sphere.get_reflective())
-    return local_contribution.add(reflected_contribution)
+    refracted_color = Color(0,0,0)
+    if transparency > 0:
+        refracted_color = trace_ray(point, direction, EPSILON, Infinity, depth-1)
+    local_contribution = local_color.mul(1-reflective)
+    reflected_contribution = reflected_color.mul(reflective)
+    refracted_contribution = refracted_color.mul(closest_sphere.get_transparency())
+    return local_contribution.add(reflected_contribution).add(refracted_contribution)
