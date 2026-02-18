@@ -208,5 +208,5 @@ def trace_ray(origin, direction : Vec, min_t, max_t, depth):
         refracted_color = trace_ray(point, direction, EPSILON, Infinity, depth-1)
     local_contribution = local_color.mul(1-reflective)
     reflected_contribution = reflected_color.mul(reflective)
-    refracted_contribution = refracted_color.mul(closest_sphere.get_transparency())
+    refracted_contribution = refracted_color.mul(transparency)
     return local_contribution.add(reflected_contribution).add(refracted_contribution)
