@@ -1,9 +1,9 @@
 import math
 from typing import Any
 
-from Pixelator import Pixelator
-from models.Color import Color
-from models.Point import Point
+from pixelator import Pixelator
+from models.color import Color
+from models.point import Point
 
 
 class Rasterizer:

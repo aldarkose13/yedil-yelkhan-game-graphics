@@ -3,7 +3,7 @@ from msilib.schema import IniFile
 
 from numpy._utils._pep440 import Infinity
 
-from models.Color import Color
+from models.color import Color
 
 LIGHT_AMBIENT = 0
 LIGHT_POINT = 1

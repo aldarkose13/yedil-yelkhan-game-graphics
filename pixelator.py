@@ -1,6 +1,6 @@
 from PIL import Image
 
-from models.Color import Color
+from models.color import Color
 
 
 class Pixelator:

@@ -1,10 +1,10 @@
 from PIL import Image
 from numpy._utils._pep440 import Infinity
 
-from Pixelator import Pixelator
-from Rasterizer import Rasterizer
-from models.Color import Color
-from models.Point import Point
+from pixelator import Pixelator
+from rasterizer import Rasterizer
+from models.color import Color
+from models.point import Point
 from utils import Vec, Sphere, canvas_to_viewport, trace_ray, Light, LIGHT_AMBIENT, LIGHT_POINT, LIGHT_DIRECTION, \
     multiply_mv
 
@@ -28,9 +28,9 @@ def commence_raytracing():
     camera_position = Vec(0, -0, 0)
     background_color = Color(255, 255, 255)
     rot_mat = [
-        [0.866, 0, -0.5],
+        [1, 0, 0],
         [0, 1, 0],
-        [0.5, 0, 0.866]
+        [0, 0, 1]
     ]
     for x in range(-center_x, center_x):
         for y in range(-center_y, center_y):
@@ -44,7 +44,7 @@ def commence_raytracing():
 
 
 if __name__ == '__main__':
-    #commence_raytracing()
+    # commence_raytracing()
     pixelator = Pixelator(width, height)
     rasterizer = Rasterizer(pixelator)
     p0 = Point(-200, -250)
