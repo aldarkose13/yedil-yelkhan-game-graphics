@@ -4,6 +4,7 @@ from msilib.schema import IniFile
 from numpy._utils._pep440 import Infinity
 
 from models.color import Color
+from models.point import Point
 
 LIGHT_AMBIENT = 0
 LIGHT_POINT = 1
@@ -210,3 +211,7 @@ def trace_ray(origin, direction : Vec, min_t, max_t, depth):
     reflected_contribution = reflected_color.mul(reflective)
     refracted_contribution = refracted_color.mul(transparency)
     return local_contribution.add(reflected_contribution).add(refracted_contribution)
+
+
+def viewport_to_canvas(point:Point, width, height, viewport_size):
+    return Point(int(point.x * width / viewport_size), int(point.y * height / viewport_size))

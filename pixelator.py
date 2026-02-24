@@ -17,4 +17,7 @@ class Pixelator:
         x = int(x)
         y = self.height // 2 - y - 1
         y = int(y)
+        # Clip to image bounds (prevents Pillow IndexError)
+        if x < 0 or x >= self.width or y < 0 or y >= self.height:
+            return
         self.img.putpixel((x, y), color.get_color())

@@ -11,7 +11,7 @@ class Rasterizer:
         self.pixelator = pixelator
 
     @staticmethod
-    def interpolate(i0 : int, d0 : int, i1 : int, d1 : int) -> list[int] | None:
+    def interpolate(i0 : int, d0 : float, i1 : int, d1 : float) -> list | None:
         if i0==i1:
             return [d0]
         values = []
@@ -77,3 +77,40 @@ class Rasterizer:
             x_end = int(max(xl, xr))
             for x in range(x_start, x_end):
                 self.pixelator.put_pixel(x, y, color)
+
+
+    def draw_shaded_triangle(self, p0 : Point, p1 : Point, p2 : Point, color: Color):
+        p0, p1, p2 = Rasterizer.sort_points(p0, p1, p2)
+        x01 = Rasterizer.interpolate(p0.y, p0.x, p1.y, p1.x)
+        h01 = Rasterizer.interpolate(p0.y, p0.h, p1.y, p1.h)
+        x12 = Rasterizer.interpolate(p1.y, p1.x, p2.y, p2.x)
+        h12 = Rasterizer.interpolate(p1.y, p1.h, p2.y, p2.h)
+        x02 = Rasterizer.interpolate(p0.y, p0.x, p2.y, p2.x)
+        h02 = Rasterizer.interpolate(p0.y, p0.h, p2.y, p2.h)
+        x01.pop()
+        x012 = x01 + x12
+        h01.pop()
+        h012 = h01 + h12
+        m = len(x02) // 2 | 0
+        if x02[m] < x012[m]:
+            x_left = x02
+            x_right = x012
+            h_left = h02
+            h_right = h012
+        else:
+            x_left = x012
+            x_right = x02
+            h_left = h012
+            h_right = h02
+        for y in range(p0.y, p2.y + 1):
+            xl = x_left[y - p0.y]
+            xr = x_right[y - p0.y]
+            hl = h_left[y - p0.y]
+            hr = h_right[y - p0.y]
+            x_start = int(min(xl, xr))
+            x_end = int(max(xl, xr))
+            if x_start == x_end:
+                continue
+            h_segment = Rasterizer.interpolate(x_start, float(hl), x_end, float(hr))
+            for x in range(x_start, x_end):
+                self.pixelator.put_pixel(x, y, color.mul(h_segment[x - x_start]))
