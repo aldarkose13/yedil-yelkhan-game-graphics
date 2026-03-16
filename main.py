@@ -1,6 +1,12 @@
 from PIL import Image
 from numpy._utils._pep440 import Infinity
+from numpy.ma.core import identity
 
+from models.camera import Camera
+from models.instance import Instance
+from models.matrix import Matrix
+from models.model import Model
+from models.triangle import Triangle
 from models.vertex import Vertex
 from pixelator import Pixelator
 from rasterizer import Rasterizer
@@ -9,7 +15,7 @@ from models.point import Point
 from utils import Vec, Sphere, canvas_to_viewport, trace_ray, Light, LIGHT_AMBIENT, LIGHT_POINT, LIGHT_DIRECTION, \
     multiply_mv
 
-width, height = 500, 500
+width, height = 1000, 1000
 img = Image.new("RGB", (width, height), "white")
 viewport_size = 1
 projection_plane_z = 1
@@ -91,17 +97,70 @@ def draw_cube(rasterizer: Rasterizer):
                          p1=vDb.project_vertex(width, height, projection_plane_z), color=GREEN)
 
 
-if __name__ == '__main__':
-    # commence_raytracing()
+def render_triangles():
     pixelator = Pixelator(width, height)
     rasterizer = Rasterizer(pixelator)
-    p0 = Point(-200, -250, 0.3)
-    p1 = Point(200, 50, 0.1)
-    p2 = Point(20, 250, 1.0)
-    rasterizer.draw_filled_triangle(p0, p1, p2, Color(0, 255, 0))
-    rasterizer.draw_wire_frame_triangle(p0, p1, p2,  Color(0, 0, 0))
-    # draw_cube(rasterizer)
+    camera = Camera(Vertex(-3, 1, 2), Matrix.make_oy_rotation_matrix(-30))
+    camera_matrix = Matrix.multiply_mm4(Matrix.transposed(camera.orientation),
+                                        Matrix.make_translation_matrix(camera.position.mul(-1)))
+    identity_matrix = Matrix([[1,0,0, 0], [0,1,0,0], [0,0,1,0], [0,0,0,1]])
+    vertices = [
+        Vertex(1, 1, 1),
+        Vertex(-1, 1, 1),
+        Vertex(-1, -1, 1),
+        Vertex(1, -1, 1),
+        Vertex(1, 1, -1),
+        Vertex(-1, 1, -1),
+        Vertex(-1, -1, -1),
+        Vertex(1, -1, -1)
+    ]
+    RED = Color(255, 0, 0)
+    GREEN = Color(0, 255, 0)
+    BLUE = Color(0, 0, 255)
+    YELLOW = Color(255, 255, 0)
+    PURPLE = Color(255, 0, 255)
+    CYAN = Color(0, 255, 255)
+
+    triangles = [
+        Triangle(0, 1, 2, RED),
+        Triangle(0, 2, 3, RED),
+        Triangle(4, 0, 3, GREEN),
+        Triangle(4, 3, 7, GREEN),
+        Triangle(5, 4, 7, BLUE),
+        Triangle(5, 7, 6, BLUE),
+        Triangle(1, 5, 6, YELLOW),
+        Triangle(1, 6, 2, YELLOW),
+        Triangle(4, 5, 1, PURPLE),
+        Triangle(4, 1, 0, PURPLE),
+        Triangle(2, 6, 7, CYAN),
+        Triangle(2, 7, 3, CYAN)
+    ]
+
+    cube = Model(vertices, triangles)
+    instances = [
+        Instance(cube, Vertex(-1.5, 0, 7), identity_matrix, 0.75),
+        Instance(cube, Vertex(1.25, 2.5, 7.5), Matrix.make_oy_rotation_matrix(195) )
+    ]
+    for i in range(0, len(instances)):
+        transform = Matrix.multiply_mm4(camera_matrix, instances[i].transform)
+        rendered_model = rasterizer.render_model(instances[i].model, transform)
+
+    # rasterizer.render_scene(instances)
     pixelator.img.show()
+
+
+if __name__ == '__main__':
+    # commence_raytracing()
+    # pixelator = Pixelator(width, height)
+    # rasterizer = Rasterizer(pixelator)
+    # p0 = Point(-200, -250, 0.3)
+    # p1 = Point(200, 50, 0.1)
+    # p2 = Point(20, 250, 1.0)
+    # rasterizer.draw_shaded_triangle(p0, p1, p2, Color(0, 255, 0))
+    # rasterizer.draw_wire_frame_triangle(p0, p1, p2,  Color(0, 0, 0))
+    # draw_cube(rasterizer)
+    # pixelator.img.show()
+    render_triangles()
 
 
 

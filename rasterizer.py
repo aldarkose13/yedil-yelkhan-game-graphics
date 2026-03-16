@@ -1,10 +1,13 @@
 import math
 from typing import Any
 
+from models.matrix import Matrix
+from models.vertex import Vertex4
 from pixelator import Pixelator
 from models.color import Color
 from models.point import Point
 
+projection_plane_z = 1
 
 class Rasterizer:
     def __init__(self, pixelator : Pixelator):
@@ -47,6 +50,43 @@ class Rasterizer:
         self.draw_line(p0, p1, color)
         self.draw_line(p1, p2, color)
         self.draw_line(p0, p2, color)
+
+    def render_triangle(self, triangle, projected):
+        self.draw_wire_frame_triangle(projected[triangle.x], projected[triangle.y], projected[triangle.z],
+                                      triangle.color)
+
+    def render_object(self, vertices, triangles):
+        projected = []
+        for i in range(0, len(vertices)):
+            projected.append(vertices[i].project_vertex(self.pixelator.width, self.pixelator.height,
+                                                     projection_plane_z))
+        for i in range(0, len(triangles)):
+            self.render_triangle(triangles[i], projected)
+
+    def render_instance(self, instance):
+        projected = []
+        model = instance.model
+        for i in range(0, len(model.vertices)):
+            projected_vertex =  model.vertices[i].add(instance.position)
+            projected.append(projected_vertex.project_vertex(self.pixelator.width, self.pixelator.height,
+                                                     projection_plane_z))
+        for i in range(0, len(model.triangles)):
+            self.render_triangle(model.triangles[i], projected)
+
+    def render_model(self, model, transform):
+        projected = []
+        for i in range(0, len(model.vertices)):
+            vertex =  model.vertices[i]
+            vertex_h = Vertex4(vertex.x, vertex.y, vertex.z, 1)
+            transformed_vertex = Matrix.multiply_mv(transform, vertex_h)
+            projected.append(transformed_vertex.project_vertex(self.pixelator.width, self.pixelator.height,
+                                                               projection_plane_z))
+        for i in range(0, len(model.triangles)):
+            self.render_triangle(model.triangles[i], projected)
+
+    def render_scene(self, instances):
+        for i in range(0, len(instances)):
+            self.render_instance(instances[i])
 
     @staticmethod
     def sort_points(p0, p1, p2):
